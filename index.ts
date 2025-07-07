@@ -4,6 +4,7 @@
  */
 
 import { ofetch } from 'ofetch';
+import { Buffer } from 'buffer';
 
 /**
  * Configuration options for QBittorrentClient.
@@ -109,7 +110,7 @@ class QBittorrentClient {
                 method,
                 headers,
                 body: data,
-                parseResponse: (txt) => txt === 'Ok.' ? true : JSON.parse(txt), // Parse response based on content
+                parseResponse: (txt: string) => txt === 'Ok.' ? true : JSON.parse(txt), // Parse response based on content
             });
         } catch (error) {
             throw new Error(`Request failed: ${error}`);
@@ -199,7 +200,7 @@ class QBittorrentClient {
                 } else if (isArrayBuffer(torrent.buffer)) {
                     buffer = torrent.buffer;
                 } else if (isSharedArrayBuffer(torrent.buffer)) {
-                    buffer = new Uint8Array(torrent.buffer).buffer;
+                    buffer = new Blob([new Uint8Array(torrent.buffer)], { type: torrent.content_type });
                 } else {
                     throw new Error('Unsupported buffer type');
                 }
