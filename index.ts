@@ -113,4 +113,30 @@ class QBittorrentClient {
     async getAllData(): Promise<{ torrents: TorrentInfo[] }> {
         return this.request('GET', 'torrents/info');
     }
+
+    async addTorrent(params: TorrentAddParameters): Promise<boolean> {
+        const formData = new FormData();
+
+        if (params.urls) {
+            const urls = Array.isArray(params.urls) ? params.urls.join('\n') : params.urls;
+            formData.append('urls', urls);
+        }
+
+        if (params.torrents) {
+            const torrents = Array.isArray(params.torrents) ? params.torrents : [params.torrents];
+            torrents.forEach((torrent, index) => {
+                formData.append('torrents', torrent.buffer, torrent.filename || `torrent_${index}.torrent`);
+            });
+        }
+
+        if (params.savepath) formData.append('savepath', params.savepath);
+        if (params.category) formData.append('category', params.category);
+        if (params.paused) formData.append('paused', params.paused.toString());
+        if (params.skip_checking) formData.append('skip_checking', params.skip_checking.toString());
+        if (params.rename) formData.append('rename', params.rename);
+        if (params.upLimit) formData.append('upLimit', params.upLimit.toString());
+        if (params.dlLimit) formData.append('dlLimit', params.dlLimit.toString());
+
+        return this.request('POST', 'torrents/add', formData);
+    }
 }
