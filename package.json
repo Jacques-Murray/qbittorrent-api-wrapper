@@ -1,0 +1,31 @@
+{
+    "name": "qbittorrent-api-wrapper",
+    "version": "1.0.0",
+    "description": "TypeScript wrapper for qBittorrent Web API v2",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    },
+    "keywords": [
+        "qbittorrent",
+        "api",
+        "wrapper",
+        "torrent",
+        "typescript"
+    ],
+    "author": "Jacques Murray",
+    "license": "MIT",
+    "dependencies": {
+        "ofetch": "^1.4.1"
+    },
+    "devDependencies": {
+        "typescript": "^5.8.3",
+        "@types/node": "^24.0.10"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Jacques-Murray/qbittorrent-api-wrapper.git"
+    }
+}
