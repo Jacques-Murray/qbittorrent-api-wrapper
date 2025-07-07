@@ -109,4 +109,8 @@ class QBittorrentClient {
     async getAPIVersion(): Promise<string> {
         return this.request('GET', 'app/version');
     }
+
+    async getAllData(): Promise<{ torrents: TorrentInfo[] }> {
+        return this.request('GET', 'torrents/info');
+    }
 }
