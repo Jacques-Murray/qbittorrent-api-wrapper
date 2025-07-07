@@ -105,4 +105,8 @@ class QBittorrentClient {
         await this.request('POST', 'auth/logout');
         this.sid = undefined;
     }
+
+    async getAPIVersion(): Promise<string> {
+        return this.request('GET', 'app/version');
+    }
 }
