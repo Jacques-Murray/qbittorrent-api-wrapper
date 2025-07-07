@@ -1,80 +1,32 @@
-name: CI Workflow for Testing and Building
+name: CI - Publish to npm
 
 on:
   push:
     branches:
-      - '**'
-  pull_request:
-    branches:
-      - '**'
+      - main
+  workflow_dispatch:
 
 jobs:
-  test-and-build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+  publish-to-npm:
+    runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout Code
-      - name: Checkout Code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Set Up Node.js
-      - name: Set Up Node.js
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '22.x'
+          node-version: '16'
           cache: 'npm'
 
-      # Step 3: Cache Dependencies
-      - name: Cache Node Modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-modules-
-
-      # Step 4: Install Dependencies
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm install
 
-      # Step 5: Run Tests
-      - name: Run Tests
-        run: npm test
-
-      # Step 6: Build Project
-      - name: Build Project
+      - name: Build the project
         run: npm run build
 
-      # Step 7: Cache Build Artifacts
-      - name: Cache Build Artifacts
-        uses: actions/cache@v3
-        with:
-          path: dist
-          key: ${{ runner.os }}-dist-${{ hashFiles('**/tsconfig.json') }}
-          restore-keys: |
-            ${{ runner.os }}-dist-
-
-  publish-to-npm:
-    needs: test-and-build
-    runs-on: ubuntu-latest
-    steps:
-      # Step 1: Checkout Code
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      # Step 2: Set Up Node.js
-      - name: Set Up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '22.x'
-
-      # Step 3: Authenticate with npm
-      - name: Authenticate with npm
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-
-      # Step 4: Publish to npm
       - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish
