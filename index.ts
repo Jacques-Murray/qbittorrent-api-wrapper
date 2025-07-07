@@ -97,7 +97,8 @@ class QBittorrentClient {
         // Extract SID from Set-Cookie header (simplified, adjust based on actual response)
         this.sid = response.headers?.get('set-cookie')?.match(/SID=([^;]+)/)?.[1];
         if (!this.sid) {
-            throw new Error('Failed to retrieve session ID');
+            console.error("SID extraction failed. Response headers:", response.headers);
+            throw new Error("Failed to extract session ID (SID).");
         }
     }
 
@@ -115,6 +116,9 @@ class QBittorrentClient {
     }
 
     async addTorrent(params: TorrentAddParameters): Promise<boolean> {
+        if (!params.torrents || (Array.isArray(params.torrents) && params.torrents.length === 0)) {
+            throw new Error("At least one torrent or URL must be provided.");
+        }
         const formData = new FormData();
 
         if (params.urls) {
@@ -131,9 +135,9 @@ class QBittorrentClient {
                     buffer = torrent.buffer;
                 } else if (Buffer.isBuffer(torrent.buffer)) {
                     buffer = Uint8Array.from(torrent.buffer).buffer;
-                } else if (Object.prototype.toString.call(torrent.buffer) === '[object ArrayBuffer]') {
+                } else if (isArrayBuffer(torrent.buffer)) {
                     buffer = torrent.buffer;
-                } else if (Object.prototype.toString.call(torrent.buffer) === '[object SharedArrayBuffer]') {
+                } else if (isSharedArrayBuffer(torrent.buffer)) {
                     buffer = new Uint8Array(torrent.buffer).buffer;
                 } else {
                     throw new Error('Unsupported buffer type');
@@ -183,6 +187,42 @@ class QBittorrentClient {
 
         return this.request('GET', `torrents/info?${query.toString()}`);
     }
+// Add support for setCategory
+async setCategory(torrentHash: string, category: string): Promise<void> {
+    const response = await this.request('POST', 'torrents/setCategory', {
+        hashes: torrentHash,
+        category: category,
+    });
+    if (response !== true) {
+        throw new Error('Failed to set category');
+    }
+}
+
+// Add support for getTorrentPeers
+async getTorrentPeers(torrentHash: string): Promise<any> {
+    const response = await this.request('GET', `torrents/peers?hash=${torrentHash}`);
+    if (!response) {
+        throw new Error('Failed to retrieve torrent peers');
+    }
+    return response;
+}
+
+// Add support for getPreferences
+async getPreferences(): Promise<any> {
+    const response = await this.request('GET', 'app/preferences');
+    if (!response) {
+        throw new Error('Failed to retrieve preferences');
+    }
+    return response;
+}
 }
 
 export { QBittorrentClient, TorrentAddParameters, TorrentInfoParameters, TorrentInfo, TorrentFile };
+// Type guard functions for ArrayBuffer and SharedArrayBuffer
+function isArrayBuffer(buffer: unknown): buffer is ArrayBuffer {
+    return buffer instanceof ArrayBuffer;
+}
+
+function isSharedArrayBuffer(buffer: unknown): buffer is SharedArrayBuffer {
+    return buffer instanceof SharedArrayBuffer;
+}
