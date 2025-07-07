@@ -139,4 +139,16 @@ class QBittorrentClient {
 
         return this.request('POST', 'torrents/add', formData);
     }
+
+    async pauseTorrent(hash: string): Promise<boolean> {
+        return this.request('POST', 'torrents/pause', { hashes: hash });
+    }
+
+    async resumeTorrent(hash: string): Promise<boolean> {
+        return this.request('POST', 'torrents/resume', { hashes: hash });
+    }
+
+    async removeTorrent(hash: string, deleteData: boolean = false): Promise<boolean> {
+        return this.request('POST', 'torrents/delete', { hashes: hash, deleteFiles: deleteData.toString() });
+    }
 }
