@@ -125,7 +125,23 @@ class QBittorrentClient {
         if (params.torrents) {
             const torrents = Array.isArray(params.torrents) ? params.torrents : [params.torrents];
             torrents.forEach((torrent, index) => {
-                formData.append('torrents', torrent.buffer, torrent.filename || `torrent_${index}.torrent`);
+                let buffer: BlobPart;
+                
+                if (typeof torrent.buffer === 'string') {
+                    buffer = torrent.buffer;
+                } else if (Buffer.isBuffer(torrent.buffer)) {
+                    buffer = Uint8Array.from(torrent.buffer).buffer;
+                } else if (Object.prototype.toString.call(torrent.buffer) === '[object ArrayBuffer]') {
+                    buffer = torrent.buffer;
+                } else if (Object.prototype.toString.call(torrent.buffer) === '[object SharedArrayBuffer]') {
+                    buffer = new Uint8Array(torrent.buffer).buffer;
+                } else {
+                    throw new Error('Unsupported buffer type');
+                }
+                
+                // Use the buffer in the Blob constructor or wherever needed
+                const blob = new Blob([buffer], { type: torrent.content_type });
+                formData.append('torrents', blob, torrent.filename || `torrent_${index}.torrent`);
             });
         }
 
@@ -151,4 +167,22 @@ class QBittorrentClient {
     async removeTorrent(hash: string, deleteData: boolean = false): Promise<boolean> {
         return this.request('POST', 'torrents/delete', { hashes: hash, deleteFiles: deleteData.toString() });
     }
+
+    async getTorrentInfo(params: TorrentInfoParameters = {}): Promise<TorrentInfo[]> {
+        const query = new URLSearchParams();
+        if (params.filter) query.append('filter', params.filter);
+        if (params.category) query.append('category', params.category);
+        if (params.sort) query.append('sort', params.sort);
+        if (params.reverse) query.append('reverse', params.reverse.toString());
+        if (params.limit) query.append('limit', params.limit.toString());
+        if (params.offset) query.append('offset', params.offset.toString());
+        if (params.hashes) {
+            const hashes = Array.isArray(params.hashes) ? params.hashes.join('|') : params.hashes;
+            query.append('hashes', hashes);
+        }
+
+        return this.request('GET', `torrents/info?${query.toString()}`);
+    }
 }
+
+export { QBittorrentClient, TorrentAddParameters, TorrentInfoParameters, TorrentInfo, TorrentFile };
