@@ -6,7 +6,8 @@
     "types": "dist/index.d.ts",
     "scripts": {
         "build": "tsc",
-        "prepublishOnly": "npm run build"
+        "prepublishOnly": "npm run build",
+        "test": "jest"
     },
     "keywords": [
         "qbittorrent",
@@ -21,8 +22,11 @@
         "ofetch": "^1.4.1"
     },
     "devDependencies": {
-        "typescript": "^5.8.3",
-        "@types/node": "^24.0.10"
+        "@types/jest": "^30.0.0",
+        "@types/node": "^24.0.10",
+        "jest": "^30.0.4",
+        "ts-jest": "^29.4.0",
+        "typescript": "^5.8.3"
     },
     "repository": {
         "type": "git",
